@@ -1,8 +1,10 @@
 import {Box, Button, Typography} from "@mui/material";
 import {useNavigate} from "react-router-dom";
+import {useThemeContext} from "../contexts/UseThemeContext.tsx";
 
 export default function WelcomePage() {
     const navigate = useNavigate();
+    const {toggleTheme} = useThemeContext();
 
     return (
         <>
@@ -17,6 +19,9 @@ export default function WelcomePage() {
                         </Button>
                         <Button variant="contained" style={{ textTransform: 'none' }}>
                             Sign up
+                        </Button>
+                        <Button onClick={() => toggleTheme()} variant="outlined" color="primary">
+                            Toggle Theme
                         </Button>
                     </Box>
                 </Box>
