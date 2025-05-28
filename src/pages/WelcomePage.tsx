@@ -17,7 +17,7 @@ export default function WelcomePage() {
                     <Button variant="contained" style={{textTransform: 'none'}} onClick={() => navigate('/login')}>
                         Log in
                     </Button>
-                    <Button variant="contained" style={{textTransform: 'none'}}>
+                    <Button variant="contained" style={{textTransform: 'none'}} onClick={() => navigate('/sign-up')}>
                         Sign up
                     </Button>
                     <Button onClick={() => toggleTheme()} variant="outlined" color="primary">

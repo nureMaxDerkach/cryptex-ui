@@ -10,28 +10,35 @@ import {
 } from "./LoginAndSignUpStyled.ts";
 import {Form, Formik} from "formik";
 import * as Yup from 'yup';
+import type {ILoginAndSignUpForm} from "../../types.ts";
 
 interface LoginAndSignUpFormProps {
     isLoginForm: boolean;
     redirectNavigate: () => void;
+    onSubmit: (values: ILoginAndSignUpForm) => void
 }
 
-const initialValues = {
-    nickname: "",
+const initialValues: ILoginAndSignUpForm = {
+    name: "",
     email: "",
     password: "",
 }
 
-const validationSchema = Yup.object().shape({
-    nickname: Yup.string().max(40, "Nickname is too long").required("Nickname is required"),
-    email: Yup.string().email('Invalid email').required('Email is required'),
-    password: Yup.string().min(6, 'Password is too short').max(20, 'Password is too long').required('Password is required')
+const loginSchema = Yup.object({
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    password: Yup.string().min(6).max(20).required("Password is required"),
 });
 
+const signUpSchema = Yup.object({
+    name: Yup.string().max(40).required("Name is required"),
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    password: Yup.string().min(6).max(20).required("Password is required"),
+});
 
-export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm}: LoginAndSignUpFormProps) {
+export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, onSubmit}: LoginAndSignUpFormProps) {
     const title = isLoginForm ? "Log in" : "Sign up";
     const redirectTitle = isLoginForm ? "Sign up" : "Log in";
+    const validationSchema = isLoginForm ? loginSchema : signUpSchema;
 
     return (
         <MainWrapper>
@@ -43,9 +50,7 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm}:
             <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
-                onSubmit={(values) => {
-                    console.log(values);
-                }}
+                onSubmit={(values) => onSubmit(values)}
                 validateOnBlur={true}
                 validateOnChange={false}
             >
@@ -53,23 +58,25 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm}:
                     <Form onSubmit={handleSubmit}>
                         <Column gap='16px'>
                             <FormWrapper>
-                                <Row gap='16px' alignItems='center'>
-                                    <Column>
-                                        <Typography>Nickname:</Typography>
-                                    </Column>
-                                    <Column>
-                                        <StyledTextField
-                                            name='nickname'
-                                            value={values.nickname}
-                                            size='small'
-                                            style={{backgroundColor: '#010A18'}}
-                                            onChange={handleChange}
-                                            onBlur={handleBlur}
-                                            helperText={(errors.nickname && touched.nickname) && errors.nickname}
-                                            error={!!(errors.nickname && touched.nickname)}
-                                        />
-                                    </Column>
-                                </Row>
+                                {!isLoginForm && (
+                                    <Row gap='16px' alignItems='center'>
+                                        <Column>
+                                            <Typography>Name:</Typography>
+                                        </Column>
+                                        <Column>
+                                            <StyledTextField
+                                                name='name'
+                                                value={values.name}
+                                                size='small'
+                                                style={{backgroundColor: '#010A18'}}
+                                                onChange={handleChange}
+                                                onBlur={handleBlur}
+                                                helperText={(errors.name && touched.name) && errors.name}
+                                                error={!!(errors.name && touched.name)}
+                                            />
+                                        </Column>
+                                    </Row>
+                                )}
                                 <Row gap='16px' alignItems='center'>
                                     <Column>
                                         <Typography>Email:</Typography>
@@ -127,11 +134,6 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm}:
                                 <Column alignItems='center'>
                                     <ExternalProviderStyledButton fullWidth variant="outlined" color="primary">
                                         Continue with Google
-                                    </ExternalProviderStyledButton>
-                                </Column>
-                                <Column alignItems='center'>
-                                    <ExternalProviderStyledButton fullWidth variant="outlined" color="primary">
-                                        Use Facebook account
                                     </ExternalProviderStyledButton>
                                 </Column>
                             </FormWrapper>
