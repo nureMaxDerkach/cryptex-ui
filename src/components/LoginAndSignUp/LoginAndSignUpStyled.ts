@@ -9,12 +9,12 @@ export const MainWrapper = styled(Column)`
     gap: 16px;
 `
 
-export const FormWrapper = styled(Column)`
-    background-color: #0C1D37;
-    padding: 10px;
-    border-radius: 4px;
-    gap: 16px;
-`
+export const FormWrapper = styled(Column)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? '#0C1D37' : '#F3F6FC',
+    padding: '10px',
+    borderRadius: '4px',
+    gap: '16px',
+}));
 
 export const StyledTextField = styled(TextField)({
     '& .MuiOutlinedInput-root': {
@@ -32,15 +32,15 @@ export const StyledTextField = styled(TextField)({
     },
 });
 
-export const RedirectStyledButton = styled(Button)`
-    color: #FFFFFF;
-    border-color: #FFFFFF;
-    width: 75%;
-    border-radius: 10px;
-`
+export const RedirectStyledButton = styled(Button)(({ theme }) => ({
+    color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#010A18',
+    borderColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#010A18',
+    width: '75%',
+    borderRadius: '10px',
+}));
 
-export const ExternalProviderStyledButton = styled(Button)`
-    color: #FFFFFF;
-    width: 80%;
-    border-radius: 10px;
-`
+export const ExternalProviderStyledButton = styled(Button)(({ theme }) => ({
+    color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#010A18',
+    width: '80%',
+    borderRadius: '10px',
+}));

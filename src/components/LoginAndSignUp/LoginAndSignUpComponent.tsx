@@ -1,4 +1,4 @@
-import {Button, Typography} from "@mui/material";
+import {Button, Typography, useTheme} from "@mui/material";
 import {Column, Row} from "../Flex";
 import {East} from "@mui/icons-material";
 import {
@@ -36,6 +36,7 @@ const signUpSchema = Yup.object({
 });
 
 export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, onSubmit}: LoginAndSignUpFormProps) {
+    const theme = useTheme();
     const title = isLoginForm ? "Log in" : "Sign up";
     const redirectTitle = isLoginForm ? "Sign up" : "Log in";
     const validationSchema = isLoginForm ? loginSchema : signUpSchema;
@@ -68,7 +69,7 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, 
                                                 name='name'
                                                 value={values.name}
                                                 size='small'
-                                                style={{backgroundColor: '#010A18'}}
+                                                style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
                                                 onChange={handleChange}
                                                 onBlur={handleBlur}
                                                 helperText={(errors.name && touched.name) && errors.name}
@@ -87,7 +88,7 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, 
                                             type='email'
                                             value={values.email}
                                             size='small'
-                                            style={{backgroundColor: '#010A18'}}
+                                            style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             helperText={(errors.email && touched.email) && errors.email}
@@ -105,7 +106,7 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, 
                                             value={values.password}
                                             size='small'
                                             type="password"
-                                            style={{backgroundColor: '#010A18'}}
+                                            style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                             helperText={(errors.password && touched.password) && errors.password}
