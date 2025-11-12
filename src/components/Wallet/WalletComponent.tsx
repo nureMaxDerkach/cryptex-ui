@@ -118,9 +118,11 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
 
     const getTransactionTypeProps = (tx: ITransaction) => {
         switch (tx.type) {
+            case 0: return { text: 'Deposit', color: 'success' as const };
             case 1: return { text: 'Withdraw', color: 'error' as const };
             case 2: return { text: 'Buy', color: 'success' as const };
             case 3: return { text: 'Sell', color: 'error' as const };
+            case 4: return { text: 'Exchange', color: 'primary' as const };
             default: return { text: 'Unknown', color: 'default' as const };
         }
     };
@@ -289,8 +291,8 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
                                                         />
                                                     </TableCell>
                                                     <TableCell>{formatCoinAmount(tx)}</TableCell>
-                                                    <TableCell sx={{ color: tx.usdValueChange >= 0 ? 'success.main' : 'error.main' }}>
-                                                        {tx.usdValueChange >= 0 ? '+' : ''}${formatCurrency(tx.usdValueChange, 2)}
+                                                    <TableCell sx={{ color: tx.usdValueChange > 0 ? 'success.main' : tx.usdValueChange < 0 ? 'error.main' : 'text.primary' }}>
+                                                        {tx.usdValueChange > 0 ? '+' : ''}${formatCurrency(tx.usdValueChange, 2)}
                                                     </TableCell>
                                                     <TableCell>${formatCurrency(tx.pricePerCoin, 2)}</TableCell>
                                                 </TableRow>
