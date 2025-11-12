@@ -97,7 +97,7 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
             )}
 
             <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <TextField
                         fullWidth
                         type="number"
@@ -121,13 +121,13 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                     />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <Typography variant="caption" color="text.secondary">
                         This will withdraw funds from your main USD balance.
                     </Typography>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <Button
                         fullWidth
                         variant="contained"

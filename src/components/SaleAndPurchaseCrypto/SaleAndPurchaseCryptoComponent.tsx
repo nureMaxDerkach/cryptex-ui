@@ -174,7 +174,7 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
 
             <Grid container spacing={3}>
                 {/* Buy Section */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Paper
                         variant="outlined"
                         sx={{ p: 3, borderRadius: 2, bgcolor: 'rgba(46, 125, 50, 0.05)' }}
@@ -241,7 +241,7 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                 </Grid>
 
                 {/* Sell Section */}
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Paper
                         variant="outlined"
                         sx={{ p: 3, borderRadius: 2, bgcolor: 'rgba(211, 47, 47, 0.05)' }}

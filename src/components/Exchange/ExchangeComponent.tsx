@@ -19,7 +19,7 @@ import {
     type SelectChangeEvent,
 } from '@mui/material';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import {type IWalletResponse, type IAmountOfCoin} from '../../types';
+import {type IWalletResponse} from '../../types';
 import {convertCoinAsync} from '../../api/exchangeApi';
 
 const COIN_ID_MAP: { [key: number]: { name: string, symbol: string } } = {
@@ -148,7 +148,7 @@ export function ExchangeComponent({
 
             <Grid container spacing={2} alignItems="center">
                 {/* 1. Селектор "From" */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <FormControl fullWidth>
                         <InputLabel>From</InputLabel>
                         <Select
@@ -173,7 +173,7 @@ export function ExchangeComponent({
                 </Grid>
 
                 {/* 2. Поле суми */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <TextField
                         fullWidth
                         type="number"
@@ -205,7 +205,7 @@ export function ExchangeComponent({
                 </Grid>
 
                 {/* 3. Кнопка "Swap" */}
-                <Grid item xs={12} sx={{textAlign: 'center'}}>
+                <Grid size={{ xs: 12 }} sx={{textAlign: 'center'}}>
                     <IconButton onClick={handleSwap} color="primary"
                                 disabled={!coinFromId && !coinToId}>
                         <SwapHorizIcon/>
@@ -213,7 +213,7 @@ export function ExchangeComponent({
                 </Grid>
 
                 {/* 4. Селектор "To" */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <FormControl fullWidth>
                         <InputLabel>To</InputLabel>
                         <Select
@@ -234,7 +234,7 @@ export function ExchangeComponent({
                 </Grid>
 
                 {/* 5. Кнопка підтвердження */}
-                <Grid item xs={12} sx={{mt: 2}}>
+                <Grid size={{ xs: 12 }} sx={{mt: 2}}>
                     <Button
                         fullWidth
                         variant="contained"
