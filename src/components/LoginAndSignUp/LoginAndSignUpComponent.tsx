@@ -18,10 +18,16 @@ interface LoginAndSignUpFormProps {
     onSubmit: (values: ILoginAndSignUpForm) => void
 }
 
+// Оновлено: додані нові поля
 const initialValues: ILoginAndSignUpForm = {
     name: "",
+    surname: "",
     email: "",
     password: "",
+    phoneNumber: "",
+    age: "",
+    country: "",
+    adress: "",
 }
 
 const loginSchema = Yup.object({
@@ -29,10 +35,16 @@ const loginSchema = Yup.object({
     password: Yup.string().min(6).max(20).required("Password is required"),
 });
 
+// Оновлено: валідація для нових полів
 const signUpSchema = Yup.object({
     name: Yup.string().max(40).required("Name is required"),
+    surname: Yup.string().max(40).required("Surname is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     password: Yup.string().min(6).max(20).required("Password is required"),
+    phoneNumber: Yup.string().matches(/^[0-9+]+$/, "Must be only digits or +").min(10).required("Phone number is required"),
+    age: Yup.number().typeError("Must be a number").min(18, "Must be 18 or older").required("Age is required"),
+    country: Yup.string().required("Country is required"),
+    adress: Yup.string().required("Address is required"),
 });
 
 export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, onSubmit}: LoginAndSignUpFormProps) {
@@ -60,28 +72,46 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, 
                         <Column gap='16px'>
                             <FormWrapper>
                                 {!isLoginForm && (
-                                    <Row gap='16px' alignItems='center'>
-                                        <Column>
-                                            <Typography>Name:</Typography>
-                                        </Column>
-                                        <Column>
-                                            <StyledTextField
-                                                name='name'
-                                                value={values.name}
-                                                size='small'
-                                                style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
-                                                onChange={handleChange}
-                                                onBlur={handleBlur}
-                                                helperText={(errors.name && touched.name) && errors.name}
-                                                error={!!(errors.name && touched.name)}
-                                            />
-                                        </Column>
-                                    </Row>
+                                    <>
+                                        {/* Name Field */}
+                                        <Row gap='16px' alignItems='center'>
+                                            <Column><Typography>Name:</Typography></Column>
+                                            <Column>
+                                                <StyledTextField
+                                                    name='name'
+                                                    value={values.name}
+                                                    size='small'
+                                                    style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    helperText={(errors.name && touched.name) && errors.name}
+                                                    error={!!(errors.name && touched.name)}
+                                                />
+                                            </Column>
+                                        </Row>
+
+                                        {/* Surname */}
+                                        <Row gap='16px' alignItems='center'>
+                                            <Column><Typography>Surname:</Typography></Column>
+                                            <Column>
+                                                <StyledTextField
+                                                    name='surname'
+                                                    value={values.surname}
+                                                    size='small'
+                                                    style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    helperText={(errors.surname && touched.surname) && errors.surname}
+                                                    error={!!(errors.surname && touched.surname)}
+                                                />
+                                            </Column>
+                                        </Row>
+                                    </>
                                 )}
+
+                                {/* Email Field */}
                                 <Row gap='16px' alignItems='center'>
-                                    <Column>
-                                        <Typography>Email:</Typography>
-                                    </Column>
+                                    <Column><Typography>Email:</Typography></Column>
                                     <Column>
                                         <StyledTextField
                                             name='email'
@@ -96,10 +126,10 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, 
                                         />
                                     </Column>
                                 </Row>
+
+                                {/* Password Field */}
                                 <Row gap='16px' alignItems='center'>
-                                    <Column>
-                                        <Typography>Password:</Typography>
-                                    </Column>
+                                    <Column><Typography>Password:</Typography></Column>
                                     <Column>
                                         <StyledTextField
                                             name="password"
@@ -114,7 +144,81 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, 
                                         />
                                     </Column>
                                 </Row>
+
+                                {!isLoginForm && (
+                                    <>
+                                        {/* Phone Number */}
+                                        <Row gap='16px' alignItems='center'>
+                                            <Column><Typography>Phone:</Typography></Column>
+                                            <Column>
+                                                <StyledTextField
+                                                    name='phoneNumber'
+                                                    value={values.phoneNumber}
+                                                    size='small'
+                                                    style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    helperText={(errors.phoneNumber && touched.phoneNumber) && errors.phoneNumber}
+                                                    error={!!(errors.phoneNumber && touched.phoneNumber)}
+                                                />
+                                            </Column>
+                                        </Row>
+
+                                        {/* Age */}
+                                        <Row gap='16px' alignItems='center'>
+                                            <Column><Typography>Age:</Typography></Column>
+                                            <Column>
+                                                <StyledTextField
+                                                    name='age'
+                                                    value={values.age}
+                                                    size='small'
+                                                    type='number' // Допомагає з валідацією
+                                                    style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    helperText={(errors.age && touched.age) && errors.age}
+                                                    error={!!(errors.age && touched.age)}
+                                                />
+                                            </Column>
+                                        </Row>
+
+                                        {/* Country */}
+                                        <Row gap='16px' alignItems='center'>
+                                            <Column><Typography>Country:</Typography></Column>
+                                            <Column>
+                                                <StyledTextField
+                                                    name='country'
+                                                    value={values.country}
+                                                    size='small'
+                                                    style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    helperText={(errors.country && touched.country) && errors.country}
+                                                    error={!!(errors.country && touched.country)}
+                                                />
+                                            </Column>
+                                        </Row>
+
+                                        {/* Address */}
+                                        <Row gap='16px' alignItems='center'>
+                                            <Column><Typography>Address:</Typography></Column>
+                                            <Column>
+                                                <StyledTextField
+                                                    name='adress'
+                                                    value={values.adress}
+                                                    size='small'
+                                                    style={{backgroundColor: theme.palette.mode === "dark" ? '#010A18' : '#FFFFFF'}}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    helperText={(errors.adress && touched.adress) && errors.adress}
+                                                    error={!!(errors.adress && touched.adress)}
+                                                />
+                                            </Column>
+                                        </Row>
+                                    </>
+                                )}
                             </FormWrapper>
+
                             <Column alignItems='flex-end'>
                                 <Button
                                     variant="contained"
