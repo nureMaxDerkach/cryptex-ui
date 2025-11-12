@@ -17,7 +17,12 @@ export interface ILogin {
 }
 
 export interface ILoginAndSignUpForm {
+    name: string;
+    surname: string;
     email: string;
     password: string;
-    name: string;
+    phoneNumber: string;
+    age: string | number;
+    country: string;
+    adress: string;
 }

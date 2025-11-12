@@ -12,10 +12,15 @@ export function LoginPage() {
             password: e.password,
         }
 
-        const token = await loginAsync(data);
-        localStorage.setItem("token", JSON.stringify("Bearer" + " " + token));
+        try {
+            const token = await loginAsync(data);
 
-        navigate("/my-assets");
+            localStorage.setItem("token", "Bearer " + token);
+
+            navigate("/tabs");
+        } catch (error) {
+            console.error("Login failed:", error);
+        }
     }
 
     return <LoginAndSignUpComponent isLoginForm redirectNavigate={() => navigate("/sign-up")} onSubmit={onLogin} />
