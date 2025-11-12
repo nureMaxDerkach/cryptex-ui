@@ -50,10 +50,8 @@ export const CRYPTO_PAIRS = [
     'ETH/USDT',
     'SOL/USDT',
     'ADA/USDT',
-    'DOT/USDT',
     'BNB/USDT',
     'XRP/USDT',
-    'DOGE/USDT',
 ]
 
 // Cryptocurrency wallet balances
