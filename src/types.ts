@@ -73,5 +73,17 @@ export interface IUser {
     id: number;
 }
 
+export interface ITransaction {
+    id: number;
+    timestamp: string;
+    type: number; // 1 = Withdraw, 2 = Buy, 3 = Sell
+    coinName: number | null;
+    coinAmount: number;
+    pricePerCoin: number;
+    usdValueChange: number;
+    user: IUser;
+    notes: string | null;
+}
+
 export interface IWalletResponse extends IUser {}
 

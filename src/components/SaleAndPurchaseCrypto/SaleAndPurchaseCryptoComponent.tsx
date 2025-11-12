@@ -9,10 +9,12 @@ import {
     InputLabel,
     FormControl,
     Paper,
+    Alert,
     type AlertColor,
     CircularProgress,
     type SelectChangeEvent,
 } from '@mui/material';
+import {CRYPTO_PAIRS} from '../../data/constants.ts';
 import {buyCoinAsync, sellCoinAsync} from '../../api/tradeApi.ts';
 import {getUserIdFromToken} from '../../utils/authUtils.ts';
 
@@ -30,13 +32,11 @@ interface SaleAndPurchaseCryptoComponentProps {
 }
 
 export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurchaseCryptoComponentProps) {
-    const [tradingPair] = useState('BTC/USDT');
-
-    // Стан для сум
+    const [tradingPair, setTradingPair] = useState('BTC/USDT');
     const [buyAmount, setBuyAmount] = useState('');
     const [sellAmount, setSellAmount] = useState('');
 
-    // --- НОВИЙ СТАН ДЛЯ ЛІМІТНИХ ОРДЕРІВ ---
+    // Стан для Лімітних ордерів
     const [orderType, setOrderType] = useState('Market');
     const [buyPrice, setBuyPrice] = useState('');
     const [sellPrice, setSellPrice] = useState('');
@@ -60,7 +60,6 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
 
     const [base, quote] = tradingPair.split('/');
 
-    // --- ОНОВЛЕНА ЛОГІКА КУПІВЛІ ---
     const handleBuy = async () => {
         const userId = getUserIdFromToken();
         if (!userId) {
@@ -82,24 +81,21 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                 await buyCoinAsync(userId, coinId, Number(buyAmount));
                 showAlert(`Market buy order for ${buyAmount} ${base} filled.`, 'success');
                 setBuyAmount('');
-                onTradeSuccess(); // Викликаємо оновлення гаманця
+                onTradeSuccess();
             } catch (error: any) {
                 showAlert(error.message, 'error');
             } finally {
                 setIsSubmittingBuy(false);
             }
         } else {
-            // TODO: Замінити на реальний API-виклик, коли він з'явиться
             await new Promise(res => setTimeout(res, 500));
             showAlert(`Limit buy order placed for ${buyAmount} ${base} at $${buyPrice}`, 'success');
             setBuyAmount('');
             setBuyPrice('');
             setIsSubmittingBuy(false);
-            // не викликаємо onTradeSuccess(), оскільки ордер ще не виконаний
         }
     };
 
-    // --- ОНОВЛЕНА ЛОГІКА ПРОДАЖУ ---
     const handleSell = async () => {
         const userId = getUserIdFromToken();
         if (!userId) {
@@ -121,14 +117,14 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                 await sellCoinAsync(userId, coinId, Number(sellAmount));
                 showAlert(`Market sell order for ${sellAmount} ${base} filled.`, 'success');
                 setSellAmount('');
-                onTradeSuccess(); // Викликаємо оновлення гаманця
+                onTradeSuccess();
             } catch (error: any) {
                 showAlert(error.message, 'error');
             } finally {
                 setIsSubmittingSell(false);
             }
         } else {
-            // TODO: Замінити на реальний API-виклик, коли він з'явиться
+            // Логіка Limit Order (імітація)
             await new Promise(res => setTimeout(res, 500));
             showAlert(`Limit sell order placed for ${sellAmount} ${base} at $${sellPrice}`, 'success');
             setSellAmount('');
@@ -139,6 +135,35 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
 
     return (
         <Paper elevation={4} sx={{borderRadius: 3, p: 4}}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+                Trade Cryptocurrency
+            </Typography>
+
+            {alertMessage && (
+                <Alert
+                    onClose={() => setAlertMessage(null)}
+                    severity={alertSeverity}
+                    sx={{mb: 3}}
+                >
+                    {alertMessage}
+                </Alert>
+            )}
+
+            <FormControl fullWidth sx={{mb: 4}}>
+                <InputLabel>Trading Pair</InputLabel>
+                <Select
+                    value={tradingPair}
+                    label="Trading Pair"
+                    onChange={(e) => setTradingPair(e.target.value)}
+                >
+                    {CRYPTO_PAIRS.map((pair) => (
+                        <MenuItem key={pair} value={pair}>
+                            {pair}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
             <Grid container spacing={3}>
                 {/* Buy Section */}
                 <Grid item xs={12} md={6}>
@@ -150,16 +175,15 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                             Buy {base}
                         </Typography>
 
-                        {/* --- ОНОВЛЕНО: ВИБІР ТИПУ ОРДЕРА --- */}
                         <FormControl fullWidth sx={{mb: 2}}>
                             <InputLabel>Order Type</InputLabel>
                             <Select
                                 value={orderType}
                                 label="Order Type"
-                                onChange={handleOrderTypeChange} // Додано
+                                onChange={handleOrderTypeChange}
                             >
                                 <MenuItem value="Market">Market</MenuItem>
-                                <MenuItem value="Limit">Limit</MenuItem> {/* Більше не disabled */}
+                                <MenuItem value="Limit">Limit</MenuItem>
                             </Select>
                         </FormControl>
 
@@ -172,7 +196,7 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                                 onChange={(e) => setBuyPrice(e.target.value)}
                                 placeholder={`Enter price in ${quote}`}
                                 inputProps={{min: 0}}
-                                sx={{mb: 2}} // Змінено з mb: 3
+                                sx={{mb: 2}}
                                 disabled={isSubmittingBuy}
                             />
                         )}
@@ -218,16 +242,15 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                             Sell {base}
                         </Typography>
 
-                        {/* --- ОНОВЛЕНО: ВИБІР ТИПУ ОРДЕРА --- */}
                         <FormControl fullWidth sx={{mb: 2}}>
                             <InputLabel>Order Type</InputLabel>
                             <Select
                                 value={orderType}
                                 label="Order Type"
-                                onChange={handleOrderTypeChange} // Додано
+                                onChange={handleOrderTypeChange}
                             >
                                 <MenuItem value="Market">Market</MenuItem>
-                                <MenuItem value="Limit">Limit</MenuItem> {/* Більше не disabled */}
+                                <MenuItem value="Limit">Limit</MenuItem>
                             </Select>
                         </FormControl>
 
@@ -240,7 +263,7 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                                 onChange={(e) => setSellPrice(e.target.value)}
                                 placeholder={`Enter price in ${quote}`}
                                 inputProps={{min: 0}}
-                                sx={{mb: 2}} // Змінено з mb: 3
+                                sx={{mb: 2}}
                                 disabled={isSubmittingSell}
                             />
                         )}

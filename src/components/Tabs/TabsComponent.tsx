@@ -3,25 +3,29 @@ import React, {useState, useEffect, useCallback} from 'react';
 import {SaleAndPurchaseCryptoComponent}
     from '../SaleAndPurchaseCrypto/SaleAndPurchaseCryptoComponent.tsx';
 import {WalletComponent} from "../Wallet/WalletComponent.tsx";
-// Нові імпорти
 import { fetchWalletDataAsync } from '../../api/walletApi.ts';
-import { type IWalletResponse } from '../../types.ts';
+import { WithdrawComponent } from '../Withdraw/WithdrawComponent.tsx';
+import { fetchHistoryAsync } from '../../api/historyApi.ts';
+import { type ITransaction, type IWalletResponse } from '../../types.ts';
 
 export function TabsComponent() {
     const [activeTab, setActiveTab] = useState('trade');
 
-    // Стан для даних гаманця
-    const [walletData, setWalletData] = useState<IWalletResponse | null>(null);
+    const [userData, setUserData] = useState<IWalletResponse | null>(null);
+    const [historyData, setHistoryData] = useState<ITransaction[]>([]);
+
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Функція для завантаження/оновлення даних
-    const fetchWallet = useCallback(async () => {
-        setIsLoading(true);
+    const fetchAllData = useCallback(async () => {
         setError(null);
         try {
-            const data = await fetchWalletDataAsync();
-            setWalletData(data);
+            const [user, history] = await Promise.all([
+                fetchWalletDataAsync(),
+                fetchHistoryAsync()
+            ]);
+            setUserData(user);
+            setHistoryData(history);
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -29,46 +33,54 @@ export function TabsComponent() {
         }
     }, []);
 
-    // Завантажуємо дані при першому рендері
     useEffect(() => {
-        if (activeTab === 'wallet' && !walletData) {
-            fetchWallet();
-        }
-    }, [activeTab, walletData, fetchWallet]);
+        setIsLoading(true);
+        fetchAllData();
+    }, [fetchAllData]);
 
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         setActiveTab(newValue);
     };
 
-    const handleTradeSuccess = () => {
-        fetchWallet();
+    const handleDataRefresh = () => {
+        fetchAllData();
     };
+
+    const tabs = [
+        { id: 'trade', label: 'Trade' },
+        { id: 'wallet', label: 'Wallet' },
+        { id: 'withdraw', label: 'Withdraw' },
+    ];
 
     return (
         <Container sx={{ mt: 4 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs
-                    value={activeTab}
-                    onChange={handleChange}
-                    aria-label="currency workspace tabs"
-                    textColor="primary"
-                    indicatorColor="primary"
-                >
-                    <Tab key="trade" label="Trade" value="trade"/>
-                    <Tab key="wallet" label="Wallet" value="wallet"/>
+                <Tabs value={activeTab} onChange={handleChange} /* ... */ >
+                    {tabs.map((tab) => (
+                        <Tab key={tab.id} label={tab.label} value={tab.id}/>
+                    ))}
                 </Tabs>
             </Box>
 
             <Box sx={{ mt: 2 }}>
                 {activeTab === 'trade' && (
-                    <SaleAndPurchaseCryptoComponent onTradeSuccess={handleTradeSuccess} />
+                    <SaleAndPurchaseCryptoComponent onTradeSuccess={handleDataRefresh} />
                 )}
                 {activeTab === 'wallet' && (
                     <WalletComponent
-                        walletData={walletData}
+                        walletData={userData}
+                        historyData={historyData}
                         isLoading={isLoading}
                         error={error}
-                        onRefresh={fetchWallet}
+                        onRefresh={handleDataRefresh}
+                    />
+                )}
+                {activeTab === 'withdraw' && (
+                    <WithdrawComponent
+                        userData={userData}
+                        isLoading={isLoading}
+                        error={error}
+                        onWithdrawSuccess={handleDataRefresh}
                     />
                 )}
             </Box>

@@ -1,4 +1,4 @@
-import {useMemo} from 'react' // 'useMemo' додано
+import {useMemo, useState} from 'react'
 import {
     Box,
     Card,
@@ -10,9 +10,16 @@ import {
     Avatar,
     CircularProgress,
     Alert,
+    TableContainer,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    Chip,
 } from '@mui/material'
 import {useTheme} from '@mui/material/styles';
-import { type IWalletResponse } from '../../types';
+import { type IWalletResponse, type ITransaction } from '../../types';
 
 const COIN_ID_MAP: { [key: number]: { name: string, symbol: string } } = {
     0: { name: 'Bitcoin', symbol: 'BTC' },
@@ -24,7 +31,8 @@ const COIN_ID_MAP: { [key: number]: { name: string, symbol: string } } = {
 };
 
 interface WalletComponentProps {
-    walletData: IWalletResponse | null;
+    walletData: IWalletResponse | null; // Це ваш тип IUser
+    historyData: ITransaction[];
     isLoading: boolean;
     error: string | null;
     onRefresh: () => void;
@@ -38,24 +46,28 @@ interface ProcessedBalance {
     usdValue: number;
 }
 
-export function WalletComponent({ walletData, isLoading, error, onRefresh }: WalletComponentProps) {
+export function WalletComponent({ walletData, historyData, isLoading, error, onRefresh }: WalletComponentProps) {
     const theme = useTheme();
 
-    const formatCurrency = (value: number, decimals: number = 2) => { // Змінено 6 на 2
+    const [selectedAssetId, setSelectedAssetId] = useState<number | 'USD' | null>(null);
+
+
+    const formatCurrency = (value: number, decimals: number = 2) => {
         return value.toLocaleString(undefined, {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals,
         })
     }
 
+    const formatTimestamp = (dateString: string) => {
+        return new Date(dateString).toLocaleString();
+    }
+
 
     const processedData = useMemo(() => {
         if (!walletData || !walletData.wallet) {
-            console.log('walletData: ', walletData);
             return { balances: [], totalValue: 0, fiatBalance: 0 };
         }
-
-
 
         const balances: ProcessedBalance[] = walletData.wallet.amountOfCoins.map(coin => {
             const coinInfo = COIN_ID_MAP[coin.name] || { name: `Unknown ${coin.name}`, symbol: '???' };
@@ -70,17 +82,54 @@ export function WalletComponent({ walletData, isLoading, error, onRefresh }: Wal
             };
         });
 
-        // Розраховуємо загальну вартість крипто-активів
+        // Рахуємо загальну вартість
         const cryptoTotalValue = balances.reduce((total, coin) => total + coin.usdValue, 0);
-
-        // Додаємо фіатний баланс
-        const fiatBalance = walletData.balance;
+        const fiatBalance = walletData.balance; // Фіатний баланс
         const totalValue = cryptoTotalValue + fiatBalance;
 
         return { balances, totalValue, fiatBalance };
 
-    }, [walletData]);
+    }, [walletData]); // Залежність від даних користувача
 
+    // Фільтруємо історію на основі обраного активу
+   const filteredHistory = useMemo(() => {
+
+        // 1. Ця перевірка ПРАВИЛЬНА (вона коректно обробляє null та 0)
+        if (selectedAssetId === null) {
+            return []; // Нічого не обрано
+        }
+
+        if (selectedAssetId === 'USD') {
+            // Фільтр для USD (де coinName - null)
+            return historyData.filter(tx => tx.coinName === null);
+        }
+
+        const filtered = historyData.filter(tx => {
+            if (tx.coinName === selectedAssetId) {
+                return true;
+            }
+            return false;
+        });
+
+        return filtered;
+
+    }, [selectedAssetId, historyData])
+
+
+    const getTransactionTypeProps = (tx: ITransaction) => {
+        switch (tx.type) {
+            case 1: return { text: 'Withdraw', color: 'error' as const };
+            case 2: return { text: 'Buy', color: 'success' as const };
+            case 3: return { text: 'Sell', color: 'error' as const };
+            default: return { text: 'Unknown', color: 'default' as const };
+        }
+    };
+
+    const formatCoinAmount = (tx: ITransaction) => {
+        if (tx.coinName === null) return 'N/A'; // Для USD
+        const symbol = COIN_ID_MAP[tx.coinName]?.symbol || '???';
+        return `${tx.coinAmount.toFixed(6)} ${symbol}`;
+    }
 
     if (isLoading) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
@@ -125,11 +174,20 @@ export function WalletComponent({ walletData, isLoading, error, onRefresh }: Wal
                 </Box>
                 <Grid container spacing={3} sx={{ mb: 4 }}>
 
-                    {/* Картка для фіатного балансу (USDT) */}
+                    {/* Картка для фіатного балансу (USD) */}
                     <Grid item xs={12} sm={6} md={4}>
                          <Paper
-                            elevation={1}
-                            sx={{ p: 2, bgcolor: 'background.paper' }}
+                            elevation={selectedAssetId === 'USD' ? 4 : 1}
+                            sx={{
+                                p: 2,
+                                cursor: 'pointer',
+                                borderColor: selectedAssetId === 'USD' ? 'primary.main' : 'transparent',
+                                border: 2,
+                                '&:hover': {
+                                    borderColor: selectedAssetId === 'USD' ? 'primary.main' : 'grey.300',
+                                }
+                            }}
+                            onClick={() => setSelectedAssetId('USD')}
                          >
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                 <Avatar
@@ -156,11 +214,17 @@ export function WalletComponent({ walletData, isLoading, error, onRefresh }: Wal
                     {processedData.balances.map((coin) => (
                         <Grid item key={coin.id} xs={12} sm={6} md={4}>
                             <Paper
-                                elevation={1}
+                                elevation={selectedAssetId === coin.id ? 4 : 1}
                                 sx={{
                                     p: 2,
-                                    bgcolor: 'background.paper',
+                                    cursor: 'pointer',
+                                    borderColor: selectedAssetId === coin.id ? 'primary.main' : 'transparent',
+                                    border: 2,
+                                    '&:hover': {
+                                        borderColor: selectedAssetId === coin.id ? 'primary.main' : 'grey.300',
+                                    }
                                 }}
+                                onClick={() => setSelectedAssetId(coin.id)}
                             >
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                                     <Avatar
@@ -192,8 +256,58 @@ export function WalletComponent({ walletData, isLoading, error, onRefresh }: Wal
                     ))}
                 </Grid>
 
-                {/* ІСТОРІЯ ТРАНЗАКЦІЙ ПРИБРАНА.
-                */}
+                {/* --- СЕКЦІЯ ІСТОРІЇ ТРАНЗАКЦІЙ --- */}
+                {selectedAssetId !== null && (
+                    <Box sx={{ mt: 4 }}>
+                        <Typography variant="h6" component="h3" sx={{ mb: 2 }}>
+                            Transaction History for {selectedAssetId === 'USD' ? 'USD' : COIN_ID_MAP[selectedAssetId as number]?.symbol}
+                        </Typography>
+                        <TableContainer component={Paper}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Date</TableCell>
+                                        <TableCell>Type</TableCell>
+                                        <TableCell>Amount (Coin)</TableCell>
+                                        <TableCell>Change (USD)</TableCell>
+                                        <TableCell>Price Per Coin</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredHistory.length > 0 ? (
+                                        filteredHistory.map((tx) => {
+                                            const typeProps = getTransactionTypeProps(tx);
+                                            return (
+                                                <TableRow key={tx.id}>
+                                                    <TableCell>{formatTimestamp(tx.timestamp)}</TableCell>
+                                                    <TableCell>
+                                                        <Chip
+                                                            label={typeProps.text}
+                                                            color={typeProps.color}
+                                                            size="small"
+                                                            variant="outlined"
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>{formatCoinAmount(tx)}</TableCell>
+                                                    <TableCell sx={{ color: tx.usdValueChange >= 0 ? 'success.main' : 'error.main' }}>
+                                                        {tx.usdValueChange >= 0 ? '+' : ''}${formatCurrency(tx.usdValueChange, 2)}
+                                                    </TableCell>
+                                                    <TableCell>${formatCurrency(tx.pricePerCoin, 2)}</TableCell>
+                                                </TableRow>
+                                            );
+                                        })
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5} align="center">
+                                                No transactions found for this asset.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                )}
             </CardContent>
         </Card>
     )
