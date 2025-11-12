@@ -2,7 +2,6 @@ import {Button, Typography, useTheme} from "@mui/material";
 import {Column, Row} from "../Flex";
 import {East} from "@mui/icons-material";
 import {
-    ExternalProviderStyledButton,
     FormWrapper,
     MainWrapper,
     RedirectStyledButton,
@@ -230,18 +229,18 @@ export default function LoginAndSignUpComponent({redirectNavigate, isLoginForm, 
                                     <East/>
                                 </Button>
                             </Column>
-                            <Column alignItems='center'>
-                                <Typography variant="h6">
-                                    or
-                                </Typography>
-                            </Column>
-                            <FormWrapper>
-                                <Column alignItems='center'>
-                                    <ExternalProviderStyledButton fullWidth variant="outlined" color="primary">
-                                        Continue with Google
-                                    </ExternalProviderStyledButton>
-                                </Column>
-                            </FormWrapper>
+                            {/*<Column alignItems='center'>*/}
+                            {/*    <Typography variant="h6">*/}
+                            {/*        or*/}
+                            {/*    </Typography>*/}
+                            {/*</Column>*/}
+                            {/*<FormWrapper>*/}
+                            {/*    <Column alignItems='center'>*/}
+                            {/*        <ExternalProviderStyledButton fullWidth variant="outlined" color="primary">*/}
+                            {/*            Continue with Google*/}
+                            {/*        </ExternalProviderStyledButton>*/}
+                            {/*    </Column>*/}
+                            {/*</FormWrapper>*/}
                             <Column onClick={redirectNavigate} alignItems='center'>
                                 <RedirectStyledButton variant="outlined">
                                     {redirectTitle}
