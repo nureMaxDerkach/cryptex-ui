@@ -177,7 +177,7 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
                 <Grid container spacing={3} sx={{ mb: 4 }}>
 
                     {/* Картка для фіатного балансу (USD) */}
-                    <Grid item xs={12} sm={6} md={4}>
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                          <Paper
                             elevation={selectedAssetId === 'USD' ? 4 : 1}
                             sx={{
@@ -214,7 +214,7 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
 
                     {/* Картки для крипто-балансів */}
                     {processedData.balances.map((coin) => (
-                        <Grid item key={coin.id} xs={12} sm={6} md={4}>
+                        <Grid size={{ xs: 12, md: 4, sm: 6 }} key={coin.id}>
                             <Paper
                                 elevation={selectedAssetId === coin.id ? 4 : 1}
                                 sx={{

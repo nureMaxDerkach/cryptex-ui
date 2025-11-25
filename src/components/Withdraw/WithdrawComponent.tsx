@@ -166,7 +166,7 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
 
             <Grid container spacing={3}>
                 {/* Currency & Amount */}
-                <Grid item xs={4}>
+                <Grid size={{ xs: 4 }}>
                     <TextField
                         select
                         fullWidth
@@ -178,7 +178,7 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                         <MenuItem value="EUR" disabled>EUR</MenuItem>
                     </TextField>
                 </Grid>
-                <Grid item xs={8}>
+                <Grid size={{ xs: 8 }}>
                     <TextField
                         fullWidth
                         type="number"
@@ -197,12 +197,12 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                     />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <Typography variant="subtitle2" sx={{ mb: 1, mt: 1 }}>Card Details</Typography>
                 </Grid>
 
                 {/* Card Details */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <TextField
                         fullWidth
                         label="Card Number"
@@ -219,7 +219,7 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                     />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <TextField
                         fullWidth
                         label="Cardholder Name"
@@ -229,7 +229,7 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                     />
                 </Grid>
 
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                     <TextField
                         fullWidth
                         label="Expiry (MM/YY)"
@@ -238,7 +238,7 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                         placeholder="MM/YY"
                     />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                     <TextField
                         fullWidth
                         type="password"
@@ -249,7 +249,7 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                     />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <Button
                         fullWidth
                         variant="contained"

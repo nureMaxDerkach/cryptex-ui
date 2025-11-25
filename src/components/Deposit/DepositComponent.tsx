@@ -130,7 +130,7 @@ export function DepositComponent({ onDepositSuccess }: DepositComponentProps) {
 
             <Grid container spacing={3}>
                 {/* 1. Currency & Amount */}
-                <Grid item xs={4}>
+                <Grid size={{ xs: 4 }}>
                     <TextField
                         select
                         fullWidth
@@ -142,7 +142,7 @@ export function DepositComponent({ onDepositSuccess }: DepositComponentProps) {
                         <MenuItem value="EUR" disabled>EUR</MenuItem>
                     </TextField>
                 </Grid>
-                <Grid item xs={8}>
+                <Grid size={{ xs: 8 }}>
                     <TextField
                         fullWidth
                         type="number"
@@ -156,12 +156,12 @@ export function DepositComponent({ onDepositSuccess }: DepositComponentProps) {
                     />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <Divider sx={{ my: 1 }}>Payment Method</Divider>
                 </Grid>
 
                 {/* 2. Payment Method Selection */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                     <RadioGroup
                         row
                         value={paymentMethod}
@@ -188,7 +188,7 @@ export function DepositComponent({ onDepositSuccess }: DepositComponentProps) {
                 {/* 3. Card Details (Conditional) */}
                 {paymentMethod === 'card' && (
                     <>
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                             <TextField
                                 fullWidth
                                 label="Card Number"
@@ -200,7 +200,7 @@ export function DepositComponent({ onDepositSuccess }: DepositComponentProps) {
                                 }}
                             />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                             <TextField
                                 fullWidth
                                 label="Expiry (MM/YY)"
@@ -210,7 +210,7 @@ export function DepositComponent({ onDepositSuccess }: DepositComponentProps) {
                                 inputProps={{ maxLength: 5 }}
                             />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                             <TextField
                                 fullWidth
                                 type="password"
@@ -225,7 +225,7 @@ export function DepositComponent({ onDepositSuccess }: DepositComponentProps) {
                 )}
 
                 {/* 4. Submit Button */}
-                <Grid item xs={12} sx={{ mt: 2 }}>
+                <Grid size={{ xs: 12 }} sx={{ mt: 2 }}>
                     <Button
                         fullWidth
                         variant="contained"
