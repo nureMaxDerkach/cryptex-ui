@@ -1,7 +1,6 @@
 import {Box, Tabs, Tab, Container} from '@mui/material';
 import React, {useState, useEffect, useCallback} from 'react';
-import {SaleAndPurchaseCryptoComponent}
-    from '../SaleAndPurchaseCrypto/SaleAndPurchaseCryptoComponent.tsx';
+import {SaleAndPurchaseCryptoComponent} from '../SaleAndPurchaseCrypto/SaleAndPurchaseCryptoComponent.tsx';
 import {WalletComponent} from "../Wallet/WalletComponent.tsx";
 import { fetchWalletDataAsync } from '../../api/walletApi.ts';
 import { type IWalletResponse } from '../../types.ts';
@@ -9,6 +8,7 @@ import { WithdrawComponent } from '../Withdraw/WithdrawComponent.tsx';
 import { fetchHistoryAsync } from '../../api/historyApi.ts';
 import { type ITransaction } from '../../types.ts';
 import { ExchangeComponent } from '../Exchange/ExchangeComponent.tsx';
+import { DepositComponent } from '../Deposit/DepositComponent.tsx';
 
 export function TabsComponent() {
     const [activeTab, setActiveTab] = useState('trade');
@@ -20,7 +20,6 @@ export function TabsComponent() {
     const [error, setError] = useState<string | null>(null);
 
     const fetchAllData = useCallback(async () => {
-        // ... (ваш код fetchAllData) ...
         setError(null);
         try {
             const [user, history] = await Promise.all([
@@ -49,17 +48,23 @@ export function TabsComponent() {
         fetchAllData();
     };
 
+    // 2. Add 'deposit' to tabs array
     const tabs = [
         { id: 'trade', label: 'Trade' },
         { id: 'exchange', label: 'Exchange' },
         { id: 'wallet', label: 'Wallet' },
+        { id: 'deposit', label: 'Deposit' }, // New Tab
         { id: 'withdraw', label: 'Withdraw' },
     ];
 
     return (
         <Container sx={{ mt: 4 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={activeTab} onChange={handleChange} /* ... */ >
+                <Tabs value={activeTab} onChange={handleChange}
+                      variant="scrollable"
+                      scrollButtons="auto"
+                      textColor="primary"
+                      indicatorColor="primary">
                     {tabs.map((tab) => (
                         <Tab key={tab.id} label={tab.label} value={tab.id}/>
                     ))}
@@ -85,6 +90,11 @@ export function TabsComponent() {
                         isLoading={isLoading}
                         error={error}
                         onRefresh={handleDataRefresh}
+                    />
+                )}
+                {activeTab === 'deposit' && (
+                    <DepositComponent
+                        onDepositSuccess={handleDataRefresh}
                     />
                 )}
                 {activeTab === 'withdraw' && (

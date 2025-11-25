@@ -82,8 +82,12 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                 showAlert(`Market buy order for ${buyAmount} ${base} filled.`, 'success');
                 setBuyAmount('');
                 onTradeSuccess();
-            } catch (error: any) {
-                showAlert(error.message, 'error');
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    showAlert(error.message, 'error');
+                } else {
+                    showAlert('An unexpected error occurred.', 'error');
+                }
             } finally {
                 setIsSubmittingBuy(false);
             }
@@ -118,8 +122,12 @@ export function SaleAndPurchaseCryptoComponent({ onTradeSuccess }: SaleAndPurcha
                 showAlert(`Market sell order for ${sellAmount} ${base} filled.`, 'success');
                 setSellAmount('');
                 onTradeSuccess();
-            } catch (error: any) {
-                showAlert(error.message, 'error');
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    showAlert(error.message, 'error');
+                } else {
+                    showAlert('An unexpected error occurred.', 'error');
+                }
             } finally {
                 setIsSubmittingSell(false);
             }
