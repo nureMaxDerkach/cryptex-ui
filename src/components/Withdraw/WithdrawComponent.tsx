@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {
     Box,
     CircularProgress,
@@ -14,6 +14,7 @@ import {Row} from "../Flex.tsx";
 import {type IWalletResponse} from '../../types';
 import {WithdrawToBankAccount} from "./WithdrawToBankAccount.tsx";
 import {WithdrawOnChain} from "./WithdrawOnChain.tsx";
+import {Crypto} from "../../data/constants.ts";
 
 interface WithdrawComponentProps {
     userData: IWalletResponse | null;
@@ -22,7 +23,7 @@ interface WithdrawComponentProps {
     onWithdrawSuccess: () => void;
 }
 
-// TODO: fix it
+//@ts-expect-error enum
 enum WithdrawTypes {
     OnChain = "On-Chain",
     BankAccount = "BankAccount",
@@ -38,6 +39,20 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
         setWithdrawType(event.target.value as WithdrawTypes);
         setAvailableBalance(userData?.balance || 0)
     }
+
+    useEffect(() => {
+        if (withdrawType === WithdrawTypes.OnChain) {
+            const coin = userData?.wallet.amountOfCoins.find(x => x.name == Crypto.BTC);
+            setAvailableBalance(coin?.amount || 0);
+            return;
+        }
+
+        if (withdrawType === WithdrawTypes.BankAccount) {
+            setAvailableBalance(userData?.balance || 0);
+            return;
+        }
+
+    }, [userData, withdrawType]);
 
     if (isLoading) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;

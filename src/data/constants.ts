@@ -206,3 +206,14 @@ export const CRYPTO_TRANSACTIONS = {
         },
     ],
 }
+
+//@ts-expect-error enum
+export enum Crypto {
+    BTC = 0,
+    ETH = 1,
+    LTC = 2,
+    BNB = 3,
+    SOLANA = 4,
+    RIPPLE = 5,
+    USDT = 6,
+}

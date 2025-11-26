@@ -1,4 +1,6 @@
 import {
+    Alert,
+    type AlertColor,
     Button,
     CircularProgress,
     FormControl,
@@ -12,22 +14,14 @@ import {
 import {useState} from "react";
 import {Column, Row} from "../Flex.tsx";
 import type {IWalletResponse} from "../../types.ts";
+import {Crypto} from "../../data/constants.ts";
+import {withdrawCryptoAsync} from "../../api/withdrawApi.ts";
 
-// TODO: fix it
-enum ChainTypes {
+//@ts-expect-error enum
+const enum ChainTypes {
     ETH = "ETH",
     ARB = "ARB",
     TON = "TON",
-}
-
-enum Crypto {
-    BTC = 0,
-    ETH = 1,
-    LTC = 2,
-    BNB = 3,
-    SOLANA = 4,
-    RIPPLE = 5,
-    USDT = 6,
 }
 
 interface Props {
@@ -39,37 +33,50 @@ interface Props {
 
 export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, setAvailableBalance}: Props) {
     const [chainType, setChainType] = useState<ChainTypes | null>(null);
-    const [crypto, setCrypto] = useState<Crypto | null>(Crypto.USDT);
-    const [address, setAddress] = useState<string | null>(null);
+    const [crypto, setCrypto] = useState<Crypto>(Crypto.BTC);
+    const [address, setAddress] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [amount, setAmount] = useState<number | null>(null);
+    const [amount, setAmount] = useState<number>(0);
+    const [alertMessage, setAlertMessage] = useState<string | null>(null);
+    const [alertSeverity, setAlertSeverity] = useState<AlertColor>('info');
 
     const onCryptoChange = (event: any) => {
-        if (event.target.value as Crypto === Crypto.USDT) {
-            setCrypto(event.target.value as Crypto);
-            setAvailableBalance(userData?.balance as number);
-            return;
-        }
         setCrypto(event.target.value as Crypto);
-
         const coin = userData?.wallet.amountOfCoins.find(x => x.name == event.target.value);
         setAvailableBalance(coin?.amount || 0);
     }
+
+    const showAlert = (message: string, severity: AlertColor) => {
+        setAlertMessage(message);
+        setAlertSeverity(severity);
+    };
 
     const onChainTypeChange = (event: any) => {
         setChainType(event.target.value as ChainTypes);
     }
 
     const handleSetMax = () => {
-        setAmount(availableBalance);
+        setAmount(availableBalance || 0);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        setIsSubmitting(true);
+
         try {
-            setIsSubmitting(true);
-            console.log("Sending...");
-        } catch (e) {
+            console.log("Sending...")
+
+            await withdrawCryptoAsync(crypto, amount, address);
+
+            showAlert(`Success! ${amount} ${Crypto[crypto]} sent to external address.`, 'success');
+
+            setAmount(0);
+            setChainType(null);
+            setAddress('');
+
+            onWithdrawSuccess();
+        } catch (e: any) {
             console.error(e);
+            showAlert(e.message || 'Withdrawal failed. ', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -77,6 +84,12 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
 
     return (
         <Column width="100%" gap='20px'>
+            {alertMessage && (
+                <Alert onClose={() => setAlertMessage(null)} severity={alertSeverity} sx={{mb: 3}}>
+                    {alertMessage}
+                </Alert>
+            )}
+
             <Row>
                 <TextField
                     fullWidth
@@ -94,7 +107,6 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
                         label="Crypto"
                         onChange={onCryptoChange}
                     >
-                        <MenuItem value={Crypto.USDT}>USDT</MenuItem>
                         <MenuItem value={Crypto.BTC}>BTC</MenuItem>
                         <MenuItem value={Crypto.ETH}>ETH</MenuItem>
                         <MenuItem value={Crypto.LTC}>LTC</MenuItem>
@@ -125,7 +137,7 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
                     type="number"
                     label='Amount'
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => setAmount(e.target.value === '' ? 0 : Number(e.target.value))}
                     placeholder="0.00"
                     inputProps={{ min: 0 }}
                     InputProps={{
