@@ -1,5 +1,4 @@
 import {
-    Alert,
     type AlertColor,
     Button,
     CircularProgress,
@@ -28,28 +27,22 @@ interface Props {
     userData: IWalletResponse | null;
     onWithdrawSuccess: () => void;
     availableBalance: number | null;
-    setAvailableBalance: React.Dispatch<React.SetStateAction<number | null>>
+    setAvailableBalance: React.Dispatch<React.SetStateAction<number | null>>;
+    showAlert: (message: string, severity: AlertColor) => void;
 }
 
-export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, setAvailableBalance}: Props) {
+export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, setAvailableBalance, showAlert}: Props) {
     const [chainType, setChainType] = useState<ChainTypes | null>(null);
     const [crypto, setCrypto] = useState<Crypto>(Crypto.BTC);
     const [address, setAddress] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [amount, setAmount] = useState<number>(0);
-    const [alertMessage, setAlertMessage] = useState<string | null>(null);
-    const [alertSeverity, setAlertSeverity] = useState<AlertColor>('info');
 
     const onCryptoChange = (event: any) => {
         setCrypto(event.target.value as Crypto);
         const coin = userData?.wallet.amountOfCoins.find(x => x.name == event.target.value);
         setAvailableBalance(coin?.amount || 0);
     }
-
-    const showAlert = (message: string, severity: AlertColor) => {
-        setAlertMessage(message);
-        setAlertSeverity(severity);
-    };
 
     const onChainTypeChange = (event: any) => {
         setChainType(event.target.value as ChainTypes);
@@ -63,11 +56,9 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
         setIsSubmitting(true);
 
         try {
-            console.log("Sending...")
-
             await withdrawCryptoAsync(crypto, amount, address);
 
-            showAlert(`Success! ${amount} ${Crypto[crypto]} sent to external address.`, 'success');
+            showAlert(`Success! ${amount} ${Crypto[crypto]} was sent to address ${address}.`, 'success');
 
             setAmount(0);
             setChainType(null);
@@ -84,12 +75,6 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
 
     return (
         <Column width="100%" gap='20px'>
-            {alertMessage && (
-                <Alert onClose={() => setAlertMessage(null)} severity={alertSeverity} sx={{mb: 3}}>
-                    {alertMessage}
-                </Alert>
-            )}
-
             <Row>
                 <TextField
                     fullWidth

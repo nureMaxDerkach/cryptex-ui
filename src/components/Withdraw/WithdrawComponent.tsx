@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
 import {
+    Alert,
+    type AlertColor,
     Box,
     CircularProgress,
     FormControl,
@@ -32,6 +34,8 @@ enum WithdrawTypes {
 export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: WithdrawComponentProps) {
     const [withdrawType, setWithdrawType] = useState<WithdrawTypes | null>(null);
     const [availableBalance, setAvailableBalance] = useState<number | null>(null);
+    const [alertMessage, setAlertMessage] = useState<string | null>(null);
+    const [alertSeverity, setAlertSeverity] = useState<AlertColor>('info');
 
     const title = withdrawType === WithdrawTypes.OnChain ? 'Withdraw to External Address' : 'Withdraw to Card';
 
@@ -52,7 +56,12 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
             return;
         }
 
-    }, [userData, withdrawType]);
+    }, [withdrawType]);
+
+    const showAlert = (message: string, severity: AlertColor) => {
+        setAlertMessage(message);
+        setAlertSeverity(severity);
+    };
 
     if (isLoading) {
         return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
@@ -67,6 +76,12 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                 <Typography variant="body1" gutterBottom sx={{ mb: 3, color: 'text.secondary' }}>
                     Available Balance: <b style={{ color: '#4caf50' }}>{availableBalance?.toFixed(2)}</b>
                 </Typography>
+            )}
+
+            {alertMessage && (
+                <Alert onClose={() => setAlertMessage(null)} severity={alertSeverity} sx={{mb: 3}}>
+                    {alertMessage}
+                </Alert>
             )}
 
             <Row sx={{ paddingBottom: '20px' }}>
@@ -88,6 +103,8 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                     <WithdrawToBankAccount
                         userData={userData}
                         onWithdrawSuccess={onWithdrawSuccess}
+                        showAlert={showAlert}
+                        setAlertMessage={setAlertMessage}
                     />
                 )}
 
@@ -97,6 +114,7 @@ export function WithdrawComponent({ userData, isLoading, onWithdrawSuccess }: Wi
                         onWithdrawSuccess={onWithdrawSuccess}
                         availableBalance={availableBalance}
                         setAvailableBalance={setAvailableBalance}
+                        showAlert={showAlert}
                     />
                 )}
             </Grid>

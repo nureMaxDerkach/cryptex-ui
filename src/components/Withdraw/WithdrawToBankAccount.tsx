@@ -1,5 +1,4 @@
 import {
-    Alert,
     type AlertColor,
     Button,
     CircularProgress,
@@ -23,9 +22,11 @@ import type {IWalletResponse} from "../../types.ts";
 interface Props {
     userData: IWalletResponse | null;
     onWithdrawSuccess: () => void;
+    showAlert: (message: string, severity: AlertColor) => void;
+    setAlertMessage:  React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-export function WithdrawToBankAccount({onWithdrawSuccess, userData}: Props) {
+export function WithdrawToBankAccount({onWithdrawSuccess, userData, showAlert, setAlertMessage}: Props) {
     // --- Form State ---
     const [amount, setAmount] = useState('');
     const [currency, setCurrency] = useState('USD');
@@ -35,8 +36,6 @@ export function WithdrawToBankAccount({onWithdrawSuccess, userData}: Props) {
     const [cvv, setCvv] = useState('');
 
     // --- UI State ---
-    const [alertMessage, setAlertMessage] = useState<string | null>(null);
-    const [alertSeverity, setAlertSeverity] = useState<AlertColor>('info');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // --- Verification Modal State ---
@@ -45,12 +44,6 @@ export function WithdrawToBankAccount({onWithdrawSuccess, userData}: Props) {
     const [codeError, setCodeError] = useState(false); // <-- НОВЫЙ СТЕЙТ ДЛЯ ОШИБКИ КОДА
 
     const currentBalance = userData?.balance || 0;
-
-    // --- Helpers ---
-    const showAlert = (message: string, severity: AlertColor) => {
-        setAlertMessage(message);
-        setAlertSeverity(severity);
-    };
 
     const handleSetMax = () => {
         setAmount(String(currentBalance));
@@ -144,12 +137,6 @@ export function WithdrawToBankAccount({onWithdrawSuccess, userData}: Props) {
 
     return (
         <>
-            {alertMessage && (
-                <Alert onClose={() => setAlertMessage(null)} severity={alertSeverity} sx={{mb: 3}}>
-                    {alertMessage}
-                </Alert>
-            )}
-
             {/* Currency & Amount */}
             <Grid size={{xs: 4}}>
                 <TextField
