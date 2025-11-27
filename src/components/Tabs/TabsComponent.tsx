@@ -20,6 +20,7 @@ export function TabsComponent() {
     const [error, setError] = useState<string | null>(null);
 
     const fetchAllData = useCallback(async () => {
+        setError(null);
         try {
             const [user, history] = await Promise.all([
                 fetchWalletDataAsync(),

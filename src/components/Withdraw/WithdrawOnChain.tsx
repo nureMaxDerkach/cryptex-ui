@@ -67,7 +67,7 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
             onWithdrawSuccess();
         } catch (e: any) {
             console.error(e);
-            showAlert(e.message || 'Withdrawal failed. ', 'error');
+            showAlert(e.message || 'Withdrawal failed.', 'error');
         } finally {
             setIsSubmitting(false);
         }
