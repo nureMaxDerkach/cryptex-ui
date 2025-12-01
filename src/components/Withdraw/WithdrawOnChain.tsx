@@ -16,12 +16,11 @@ import type {IWalletResponse} from "../../types.ts";
 import {Crypto} from "../../data/constants.ts";
 import {withdrawCryptoAsync} from "../../api/withdrawApi.ts";
 
-//@ts-expect-error enum
-const enum ChainTypes {
-    ETH = "ETH",
-    ARB = "ARB",
-    TON = "TON",
-}
+// const enum ChainTypes {
+//     ETH = "ETH",
+//     ARB = "ARB",
+//     TON = "TON",
+// }
 
 interface Props {
     userData: IWalletResponse | null;
@@ -32,7 +31,7 @@ interface Props {
 }
 
 export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, setAvailableBalance, showAlert}: Props) {
-    const [chainType, setChainType] = useState<ChainTypes | null>(null);
+    // const [chainType, setChainType] = useState<ChainTypes | null>(null);
     const [crypto, setCrypto] = useState<Crypto>(Crypto.BTC);
     const [address, setAddress] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -44,9 +43,9 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
         setAvailableBalance(coin?.amount || 0);
     }
 
-    const onChainTypeChange = (event: any) => {
-        setChainType(event.target.value as ChainTypes);
-    }
+    // const onChainTypeChange = (event: any) => {
+    //     setChainType(event.target.value as ChainTypes);
+    // }
 
     const handleSetMax = () => {
         setAmount(availableBalance || 0);
@@ -73,7 +72,7 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
             showAlert(`Success! ${amount} ${Crypto[crypto]} was sent to address ${address}.`, 'success');
 
             setAmount(0);
-            setChainType(null);
+            // setChainType(null);
             setAddress('');
 
             onWithdrawSuccess();
@@ -113,20 +112,20 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
                     </Select>
                 </FormControl>
             </Row>
-            <Row>
-                <FormControl fullWidth={true}>
-                    <InputLabel>Chain type</InputLabel>
-                    <Select
-                        value={chainType}
-                        label="Network"
-                        onChange={onChainTypeChange}
-                    >
-                        <MenuItem value={ChainTypes.ETH}>ETH</MenuItem>
-                        <MenuItem value={ChainTypes.ARB}>ARB</MenuItem>
-                        <MenuItem value={ChainTypes.TON}>TON</MenuItem>
-                    </Select>
-                </FormControl>
-            </Row>
+            {/*<Row>*/}
+            {/*    <FormControl fullWidth={true}>*/}
+            {/*        <InputLabel>Chain type</InputLabel>*/}
+            {/*        <Select*/}
+            {/*            value={chainType}*/}
+            {/*            label="Network"*/}
+            {/*            onChange={onChainTypeChange}*/}
+            {/*        >*/}
+            {/*            <MenuItem value={ChainTypes.ETH}>ETH</MenuItem>*/}
+            {/*            <MenuItem value={ChainTypes.ARB}>ARB</MenuItem>*/}
+            {/*            <MenuItem value={ChainTypes.TON}>TON</MenuItem>*/}
+            {/*        </Select>*/}
+            {/*    </FormControl>*/}
+            {/*</Row>*/}
 
             <Grid size={{ xs: 12 }}>
                 <TextField

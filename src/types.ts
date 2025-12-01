@@ -38,6 +38,7 @@ export interface IAmountOfCoin {
     price: number;
     amount: number;
     walletId: number;
+    depositAddress: string;
     id: number;
 }
 
