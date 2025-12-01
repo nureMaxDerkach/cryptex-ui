@@ -53,6 +53,18 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
     };
 
     const handleSubmit = async () => {
+        const withdrawAmount = Number(amount);
+
+        if (withdrawAmount <= 0) {
+            showAlert('Amount must be greater than zero.', 'error');
+            return;
+        }
+
+        if (availableBalance != null && withdrawAmount > availableBalance) {
+            showAlert('Insufficient balance.', 'error');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
