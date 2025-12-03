@@ -10,17 +10,11 @@ import {
     Select,
     TextField,
 } from "@mui/material";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Column, Row} from "../Flex.tsx";
 import type {IWalletResponse} from "../../types.ts";
 import {Crypto} from "../../data/constants.ts";
 import {withdrawCryptoAsync} from "../../api/withdrawApi.ts";
-
-// const enum ChainTypes {
-//     ETH = "ETH",
-//     ARB = "ARB",
-//     TON = "TON",
-// }
 
 interface Props {
     userData: IWalletResponse | null;
@@ -31,21 +25,24 @@ interface Props {
 }
 
 export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, setAvailableBalance, showAlert}: Props) {
-    // const [chainType, setChainType] = useState<ChainTypes | null>(null);
     const [crypto, setCrypto] = useState<Crypto>(Crypto.BTC);
     const [address, setAddress] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [amount, setAmount] = useState<number>(0);
+
+    useEffect(() => {
+        const updatedAmount = userData?.wallet.amountOfCoins.find(x => x.name === crypto)?.amount;
+
+        if (availableBalance != updatedAmount) {
+            setAvailableBalance(updatedAmount || 0);
+        }
+    }, [userData]);
 
     const onCryptoChange = (event: any) => {
         setCrypto(event.target.value as Crypto);
         const coin = userData?.wallet.amountOfCoins.find(x => x.name == event.target.value);
         setAvailableBalance(coin?.amount || 0);
     }
-
-    // const onChainTypeChange = (event: any) => {
-    //     setChainType(event.target.value as ChainTypes);
-    // }
 
     const handleSetMax = () => {
         setAmount(availableBalance || 0);
@@ -72,7 +69,6 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
             showAlert(`Success! ${amount} ${Crypto[crypto]} was sent to address ${address}.`, 'success');
 
             setAmount(0);
-            // setChainType(null);
             setAddress('');
 
             onWithdrawSuccess();
@@ -112,20 +108,6 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
                     </Select>
                 </FormControl>
             </Row>
-            {/*<Row>*/}
-            {/*    <FormControl fullWidth={true}>*/}
-            {/*        <InputLabel>Chain type</InputLabel>*/}
-            {/*        <Select*/}
-            {/*            value={chainType}*/}
-            {/*            label="Network"*/}
-            {/*            onChange={onChainTypeChange}*/}
-            {/*        >*/}
-            {/*            <MenuItem value={ChainTypes.ETH}>ETH</MenuItem>*/}
-            {/*            <MenuItem value={ChainTypes.ARB}>ARB</MenuItem>*/}
-            {/*            <MenuItem value={ChainTypes.TON}>TON</MenuItem>*/}
-            {/*        </Select>*/}
-            {/*    </FormControl>*/}
-            {/*</Row>*/}
 
             <Grid size={{ xs: 12 }}>
                 <TextField
