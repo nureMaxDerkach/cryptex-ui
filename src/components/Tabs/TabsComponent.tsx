@@ -94,6 +94,7 @@ export function TabsComponent() {
                 )}
                 {activeTab === 'deposit' && (
                     <DepositComponent
+                        userData={userData}
                         onDepositSuccess={handleDataRefresh}
                     />
                 )}
