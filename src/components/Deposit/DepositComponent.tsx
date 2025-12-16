@@ -1,4 +1,3 @@
-// src/components/Deposit/DepositComponent.tsx
 import {
     Typography,
     Paper,
@@ -27,6 +26,7 @@ export function DepositComponent({ onDepositSuccess, userData }: DepositComponen
 
     return (
         <Paper elevation={4} sx={{ borderRadius: 3, p: 4, maxWidth: 600, margin: 'auto' }}>
+
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <AccountBalanceWalletIcon color="primary" sx={{ mr: 1, fontSize: 30 }} />
                 <Typography variant="h6" fontWeight="bold">
@@ -53,7 +53,10 @@ export function DepositComponent({ onDepositSuccess, userData }: DepositComponen
             )}
 
             {depositType === DepositTypes.Crypto && (
-                <DepositCrypto userData={userData} />
+                <DepositCrypto
+                    userData={userData}
+                    onDepositSuccess={onDepositSuccess}
+                />
             )}
         </Paper>
     );

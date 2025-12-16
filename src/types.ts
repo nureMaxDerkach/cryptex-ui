@@ -88,3 +88,22 @@ export interface ITransaction {
 
 export interface IWalletResponse extends IUser {}
 
+export interface ICoinPrice {
+    date: string;
+    price: number;
+}
+
+export interface IChatMessage {
+    id: number;
+    ticketId: number;
+    authorId: number;
+    value: string;
+}
+
+export interface ITicket {
+    id: number;
+    userId: number;
+    status: number;
+    chatHistory: IChatMessage[];
+}
+
