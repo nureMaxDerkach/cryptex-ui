@@ -215,5 +215,31 @@ export enum Crypto {
     BNB = 3,
     SOLANA = 4,
     RIPPLE = 5,
-    USDT = 6,
+}
+
+//@ts-expect-error enum
+export enum BinanceInterval {
+    _1m = 0,
+    _3m = 1,
+    _5m = 2,
+    _15m = 3,
+    _30m = 4,
+    _1h = 5,
+    _2h = 6,
+    _4h = 7,
+    _6h = 8,
+    _8h = 9,
+    _12h = 10,
+    _1d = 11,
+    _3d = 12,
+    _1w = 13,
+    _1M = 14,
+}
+
+//@ts-expect-error enum
+export enum TicketCategory {
+    General = 'General Question',
+    Technical = 'Technical Issue',
+    Billing = 'Billing & Payments',
+    Feature = 'Feature Request'
 }

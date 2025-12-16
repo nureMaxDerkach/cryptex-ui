@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react'
+import { useMemo, useState } from 'react'
 import {
     Box,
     Card,
@@ -17,8 +17,12 @@ import {
     TableCell,
     TableBody,
     Chip,
+    IconButton,
+    Tooltip,
+    Snackbar,
 } from '@mui/material'
-import {useTheme} from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { type IWalletResponse, type ITransaction } from '../../types';
 
 const COIN_ID_MAP: { [key: number]: { name: string, symbol: string } } = {
@@ -31,7 +35,7 @@ const COIN_ID_MAP: { [key: number]: { name: string, symbol: string } } = {
 };
 
 interface WalletComponentProps {
-    walletData: IWalletResponse | null; // Це ваш тип IUser
+    walletData: IWalletResponse | null;
     historyData: ITransaction[];
     isLoading: boolean;
     error: string | null;
@@ -44,6 +48,7 @@ interface ProcessedBalance {
     symbol: string;
     balance: number;
     usdValue: number;
+    depositAddress: string;
 }
 
 export function WalletComponent({ walletData, historyData, isLoading, error, onRefresh }: WalletComponentProps) {
@@ -51,6 +56,8 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
 
     const [selectedAssetId, setSelectedAssetId] = useState<number | 'USD' | null>(null);
 
+    // Стейт для сповіщення про копіювання
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     const formatCurrency = (value: number, decimals: number = 2) => {
         return value.toLocaleString(undefined, {
@@ -63,6 +70,12 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
         return new Date(dateString).toLocaleString();
     }
 
+    // Функція копіювання адреси
+    const handleCopyAddress = (address: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(address);
+        setSnackbarOpen(true);
+    };
 
     const processedData = useMemo(() => {
         if (!walletData || !walletData.wallet) {
@@ -79,42 +92,27 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
                 symbol: coinInfo.symbol,
                 balance: coin.amount,
                 usdValue: usdValue,
+                depositAddress: coin.depositAddress || 'Address not available', // 2. Дістаємо адресу з API
             };
         });
 
-        // Рахуємо загальну вартість
         const cryptoTotalValue = balances.reduce((total, coin) => total + coin.usdValue, 0);
-        const fiatBalance = walletData.balance; // Фіатний баланс
+        const fiatBalance = walletData.balance;
         const totalValue = cryptoTotalValue + fiatBalance;
 
         return { balances, totalValue, fiatBalance };
 
-    }, [walletData]); // Залежність від даних користувача
+    }, [walletData]);
 
-    // Фільтруємо історію на основі обраного активу
-   const filteredHistory = useMemo(() => {
+    const filteredHistory = useMemo(() => {
+        if (selectedAssetId === null) return [];
+        if (selectedAssetId === 'USD') return historyData.filter(tx => tx.coinName === null);
 
-        // 1. Ця перевірка ПРАВИЛЬНА (вона коректно обробляє null та 0)
-        if (selectedAssetId === null) {
-            return []; // Нічого не обрано
-        }
-
-        if (selectedAssetId === 'USD') {
-            // Фільтр для USD (де coinName - null)
-            return historyData.filter(tx => tx.coinName === null);
-        }
-
-        const filtered = historyData.filter(tx => {
-            if (tx.coinName === selectedAssetId) {
-                return true;
-            }
+        return historyData.filter(tx => {
+            if (tx.coinName === selectedAssetId) return true;
             return false;
         });
-
-        return filtered;
-
     }, [selectedAssetId, historyData])
-
 
     const getTransactionTypeProps = (tx: ITransaction) => {
         switch (tx.type) {
@@ -128,56 +126,34 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
     };
 
     const formatCoinAmount = (tx: ITransaction) => {
-        if (tx.coinName === null) return 'N/A'; // Для USD
+        if (tx.coinName === null) return 'N/A';
         const symbol = COIN_ID_MAP[tx.coinName]?.symbol || '???';
         return `${tx.coinAmount.toFixed(6)} ${symbol}`;
     }
 
-    if (isLoading) {
-        return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
-    }
+    if (isLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
 
-    if (error) {
-        return (
-            <Alert severity="error" action={
-                <Button color="inherit" size="small" onClick={onRefresh}>
-                    Try Again
-                </Button>
-            }>
+    if (error) return (
+            <Alert severity="error" action={<Button color="inherit" size="small" onClick={onRefresh}>Try Again</Button>}>
                 {error}
             </Alert>
         );
-    }
 
-    if (!walletData) {
-        return <Typography>No wallet data found.</Typography>;
-    }
+    if (!walletData) return <Typography>No wallet data found.</Typography>;
 
     return (
         <Card>
             <CardContent>
-                <Box
-                    sx={{
-                        mb: 3,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                    }}
-                >
-                    <Typography variant="h6" component="h2">
-                        My Wallet
-                    </Typography>
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h6" component="h2">My Wallet</Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Total Value:{' '}
-                        <Box component="span" sx={{ fontWeight: 'medium', color: 'text.primary' }}>
-                            ${formatCurrency(processedData.totalValue, 2)}
-                        </Box>
+                        Total Value: <Box component="span" sx={{ fontWeight: 'medium', color: 'text.primary' }}>${formatCurrency(processedData.totalValue, 2)}</Box>
                     </Typography>
                 </Box>
-                <Grid container spacing={3} sx={{ mb: 4 }}>
 
-                    {/* Картка для фіатного балансу (USD) */}
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+                    {/* Картка USD (без адреси) */}
+                    <Grid item xs={12} sm={6} md={4}>
                          <Paper
                             elevation={selectedAssetId === 'USD' ? 4 : 1}
                             sx={{
@@ -185,36 +161,31 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
                                 cursor: 'pointer',
                                 borderColor: selectedAssetId === 'USD' ? 'primary.main' : 'transparent',
                                 border: 2,
-                                '&:hover': {
-                                    borderColor: selectedAssetId === 'USD' ? 'primary.main' : 'grey.300',
-                                }
+                                height: '100%', // Однаковий розмір карток
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                '&:hover': { borderColor: selectedAssetId === 'USD' ? 'primary.main' : 'grey.300' }
                             }}
                             onClick={() => setSelectedAssetId('USD')}
                          >
-                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                <Avatar
-                                    sx={{
-                                        width: 32, height: 32,
-                                        bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[100],
-                                        color: theme.palette.mode === 'dark' ? theme.palette.grey[100] : theme.palette.text.primary,
-                                        fontSize: '0.75rem', fontWeight: 'medium', mr: 1,
-                                    }}
-                                >
-                                    USD
-                                </Avatar>
-                                <Typography variant="body1" fontWeight="medium">
-                                    USD Balance
+                            <Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                    <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[100], color: theme.palette.mode === 'dark' ? theme.palette.grey[100] : theme.palette.text.primary, fontSize: '0.75rem', fontWeight: 'medium', mr: 1 }}>
+                                        USD
+                                    </Avatar>
+                                    <Typography variant="body1" fontWeight="medium">USD Balance</Typography>
+                                </Box>
+                                <Typography variant="h6" component="div" fontWeight="semibold">
+                                    ${formatCurrency(processedData.fiatBalance)}
                                 </Typography>
                             </Box>
-                            <Typography variant="h6" component="div" fontWeight="semibold">
-                                ${formatCurrency(processedData.fiatBalance)}
-                            </Typography>
                          </Paper>
                     </Grid>
 
-                    {/* Картки для крипто-балансів */}
+                    {/* 3. Оновлені картки криптовалют */}
                     {processedData.balances.map((coin) => (
-                        <Grid size={{ xs: 12, md: 4, sm: 6 }} key={coin.id}>
+                        <Grid item xs={12} md={4} sm={6} key={coin.id}>
                             <Paper
                                 elevation={selectedAssetId === coin.id ? 4 : 1}
                                 sx={{
@@ -222,43 +193,63 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
                                     cursor: 'pointer',
                                     borderColor: selectedAssetId === coin.id ? 'primary.main' : 'transparent',
                                     border: 2,
-                                    '&:hover': {
-                                        borderColor: selectedAssetId === coin.id ? 'primary.main' : 'grey.300',
-                                    }
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between',
+                                    '&:hover': { borderColor: selectedAssetId === coin.id ? 'primary.main' : 'grey.300' }
                                 }}
                                 onClick={() => setSelectedAssetId(coin.id)}
                             >
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                                    <Avatar
-                                        sx={{
-                                            width: 32, height: 32,
-                                            bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[100],
-                                            color: theme.palette.mode === 'dark' ? theme.palette.grey[100] : theme.palette.text.primary,
-                                            fontSize: '0.75rem', fontWeight: 'medium', mr: 1,
-                                        }}
-                                    >
-                                        {coin.symbol}
-                                    </Avatar>
-                                    <Typography variant="body1" fontWeight="medium">
-                                        {coin.name}
+                                <Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                        <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[100], color: theme.palette.mode === 'dark' ? theme.palette.grey[100] : theme.palette.text.primary, fontSize: '0.75rem', fontWeight: 'medium', mr: 1 }}>
+                                            {coin.symbol}
+                                        </Avatar>
+                                        <Typography variant="body1" fontWeight="medium">{coin.name}</Typography>
+                                    </Box>
+                                    <Typography variant="h6" component="div" fontWeight="semibold">
+                                        {formatCurrency(coin.balance, 6)} {coin.symbol}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                                        ${formatCurrency(coin.usdValue, 2)} USD
                                     </Typography>
                                 </Box>
-                                <Typography variant="h6" component="div" fontWeight="semibold">
-                                    {formatCurrency(coin.balance, 6)} {coin.symbol}
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{ mt: 0.5 }}
+
+                                {/* Секція адреси депозиту */}
+                                <Box
+                                    sx={{
+                                        mt: 2,
+                                        p: 1,
+                                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'grey.100',
+                                        borderRadius: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between'
+                                    }}
                                 >
-                                    ${formatCurrency(coin.usdValue, 2)} USD
-                                </Typography>
+                                    <Box sx={{ overflow: 'hidden', mr: 1 }}>
+                                        <Typography variant="caption" color="text.secondary" display="block">
+                                            Deposit Address
+                                        </Typography>
+                                        <Tooltip title={coin.depositAddress}>
+                                            <Typography variant="body2" noWrap sx={{ fontFamily: 'monospace' }}>
+                                                {coin.depositAddress}
+                                            </Typography>
+                                        </Tooltip>
+                                    </Box>
+                                    <Tooltip title="Copy Address">
+                                        <IconButton size="small" onClick={(e) => handleCopyAddress(coin.depositAddress, e)}>
+                                            <ContentCopyIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Box>
                             </Paper>
                         </Grid>
                     ))}
                 </Grid>
 
-                {/* --- СЕКЦІЯ ІСТОРІЇ ТРАНЗАКЦІЙ --- */}
+                {/* Таблиця історії транзакцій */}
                 {selectedAssetId !== null && (
                     <Box sx={{ mt: 4 }}>
                         <Typography variant="h6" component="h3" sx={{ mb: 2 }}>
@@ -283,12 +274,7 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
                                                 <TableRow key={tx.id}>
                                                     <TableCell>{formatTimestamp(tx.timestamp)}</TableCell>
                                                     <TableCell>
-                                                        <Chip
-                                                            label={typeProps.text}
-                                                            color={typeProps.color}
-                                                            size="small"
-                                                            variant="outlined"
-                                                        />
+                                                        <Chip label={typeProps.text} color={typeProps.color} size="small" variant="outlined" />
                                                     </TableCell>
                                                     <TableCell>{formatCoinAmount(tx)}</TableCell>
                                                     <TableCell sx={{ color: tx.usdValueChange > 0 ? 'success.main' : tx.usdValueChange < 0 ? 'error.main' : 'text.primary' }}>
@@ -300,9 +286,7 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
                                         })
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={5} align="center">
-                                                No transactions found for this asset.
-                                            </TableCell>
+                                            <TableCell colSpan={5} align="center">No transactions found for this asset.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
@@ -311,6 +295,14 @@ export function WalletComponent({ walletData, historyData, isLoading, error, onR
                     </Box>
                 )}
             </CardContent>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={2000}
+                onClose={() => setSnackbarOpen(false)}
+                message="Address copied to clipboard"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            />
         </Card>
     )
 }

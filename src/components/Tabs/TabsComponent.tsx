@@ -1,14 +1,20 @@
-import {Box, Tabs, Tab, Container} from '@mui/material';
-import React, {useState, useEffect, useCallback} from 'react';
-import {SaleAndPurchaseCryptoComponent} from '../SaleAndPurchaseCrypto/SaleAndPurchaseCryptoComponent.tsx';
-import {WalletComponent} from "../Wallet/WalletComponent.tsx";
+import { Box, Tabs, Tab, Container } from '@mui/material';
+import React, { useState, useEffect, useCallback } from 'react';
+import { SaleAndPurchaseCryptoComponent } from '../SaleAndPurchaseCrypto/SaleAndPurchaseCryptoComponent.tsx';
+import { WalletComponent } from "../Wallet/WalletComponent.tsx";
 import { fetchWalletDataAsync } from '../../api/walletApi.ts';
-import { type IWalletResponse } from '../../types.ts';
+import { type IWalletResponse, type ITransaction } from '../../types.ts';
 import { WithdrawComponent } from '../Withdraw/WithdrawComponent.tsx';
 import { fetchHistoryAsync } from '../../api/historyApi.ts';
-import { type ITransaction } from '../../types.ts';
 import { ExchangeComponent } from '../Exchange/ExchangeComponent.tsx';
 import { DepositComponent } from '../Deposit/DepositComponent.tsx';
+// Імпорт нового компонента
+import { CoinPricesComponent } from '../CoinPricesComponent/CoinPricesComponent.tsx';
+import {SupportComponent} from "../Support/SupportComponent.tsx";
+import {getUserRole} from "../../api/authApi.ts";
+import {
+    SupportPanelComponent
+} from "../SupportPanel/SupportPanelComponent.tsx";
 
 export function TabsComponent() {
     const [activeTab, setActiveTab] = useState('trade');
@@ -18,6 +24,8 @@ export function TabsComponent() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [userRole, setUserRole] = useState<number | string | null>(null);
 
     const fetchAllData = useCallback(async () => {
         setError(null);
@@ -36,9 +44,14 @@ export function TabsComponent() {
     }, []);
 
     useEffect(() => {
+        const role = getUserRole();
+        setUserRole(role);
+
         setIsLoading(true);
         fetchAllData();
     }, [fetchAllData]);
+
+    const isSupportOrAdmin = userRole === "Support" || userRole === 1 || userRole === 2;
 
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         setActiveTab(newValue);
@@ -48,14 +61,19 @@ export function TabsComponent() {
         fetchAllData();
     };
 
-    // 2. Add 'deposit' to tabs array
     const tabs = [
         { id: 'trade', label: 'Trade' },
         { id: 'exchange', label: 'Exchange' },
+        { id: 'coin-prices', label: 'Coin Prices' }, // Нова вкладка
         { id: 'wallet', label: 'Wallet' },
-        { id: 'deposit', label: 'Deposit' }, // New Tab
+        { id: 'deposit', label: 'Deposit' },
         { id: 'withdraw', label: 'Withdraw' },
+        { id: 'support', label: 'Support' },
     ];
+
+    if (isSupportOrAdmin) {
+        tabs.push({ id: 'support-panel', label: 'Support Panel' });
+    }
 
     return (
         <Container sx={{ mt: 4 }}>
@@ -66,7 +84,7 @@ export function TabsComponent() {
                       textColor="primary"
                       indicatorColor="primary">
                     {tabs.map((tab) => (
-                        <Tab key={tab.id} label={tab.label} value={tab.id}/>
+                        <Tab key={tab.id} label={tab.label} value={tab.id} />
                     ))}
                 </Tabs>
             </Box>
@@ -82,6 +100,10 @@ export function TabsComponent() {
                         error={error}
                         onExchangeSuccess={handleDataRefresh}
                     />
+                )}
+                {/* Рендеринг нового компонента */}
+                {activeTab === 'coin-prices' && (
+                    <CoinPricesComponent />
                 )}
                 {activeTab === 'wallet' && (
                     <WalletComponent
@@ -105,6 +127,12 @@ export function TabsComponent() {
                         error={error}
                         onWithdrawSuccess={handleDataRefresh}
                     />
+                )}
+                {activeTab === 'support' && (
+                    <SupportComponent userData={userData} />
+                )}
+                {activeTab === 'support-panel' && isSupportOrAdmin && userData && (
+                    <SupportPanelComponent currentUserId={userData.id} />
                 )}
             </Box>
         </Container>

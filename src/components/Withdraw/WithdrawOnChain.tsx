@@ -9,12 +9,14 @@ import {
     MenuItem,
     Select,
     TextField,
+    Typography,
+    Box
 } from "@mui/material";
-import {useEffect, useState} from "react";
-import {Column, Row} from "../Flex.tsx";
-import type {IWalletResponse} from "../../types.ts";
-import {Crypto} from "../../data/constants.ts";
-import {withdrawCryptoAsync} from "../../api/withdrawApi.ts";
+import { useEffect, useState } from "react";
+import { Column, Row } from "../Flex.tsx";
+import type { IWalletResponse } from "../../types.ts";
+import { Crypto } from "../../data/constants.ts";
+import { withdrawCryptoAsync } from "../../api/withdrawApi.ts";
 
 interface Props {
     userData: IWalletResponse | null;
@@ -24,51 +26,60 @@ interface Props {
     showAlert: (message: string, severity: AlertColor) => void;
 }
 
-export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, setAvailableBalance, showAlert}: Props) {
+export function WithdrawOnChain({ userData, onWithdrawSuccess, availableBalance, setAvailableBalance, showAlert }: Props) {
     const [crypto, setCrypto] = useState<Crypto>(Crypto.BTC);
     const [address, setAddress] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [amount, setAmount] = useState<number>(0);
+
+    const [amountStr, setAmountStr] = useState<string>('');
+
+    const getCoinBalance = (coinEnum: Crypto) => {
+        return userData?.wallet.amountOfCoins.find(x => x.name === coinEnum)?.amount || 0;
+    };
 
     useEffect(() => {
-        const updatedAmount = userData?.wallet.amountOfCoins.find(x => x.name === crypto)?.amount;
-
-        if (availableBalance != updatedAmount) {
-            setAvailableBalance(updatedAmount || 0);
-        }
-    }, [userData]);
+        const balance = getCoinBalance(crypto);
+        setAvailableBalance(balance);
+    }, [userData, crypto, setAvailableBalance]);
 
     const onCryptoChange = (event: any) => {
-        setCrypto(event.target.value as Crypto);
-        const coin = userData?.wallet.amountOfCoins.find(x => x.name == event.target.value);
-        setAvailableBalance(coin?.amount || 0);
-    }
+        const newCrypto = event.target.value as Crypto;
+        setCrypto(newCrypto);
+        setAmountStr('');
+    };
 
     const handleSetMax = () => {
-        setAmount(availableBalance || 0);
+        if (availableBalance !== null) {
+            setAmountStr(availableBalance.toString());
+        }
     };
 
     const handleSubmit = async () => {
-        const withdrawAmount = Number(amount);
+        const withdrawAmount = parseFloat(amountStr);
 
-        if (withdrawAmount <= 0) {
+        if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
             showAlert('Amount must be greater than zero.', 'error');
             return;
         }
 
-        if (availableBalance != null && withdrawAmount > availableBalance) {
+        if (availableBalance !== null && withdrawAmount > availableBalance) {
             showAlert('Insufficient balance.', 'error');
+            return;
+        }
+
+        if (!address.trim()) {
+            showAlert('Please enter a valid wallet address.', 'error');
             return;
         }
 
         setIsSubmitting(true);
 
         try {
-            await withdrawCryptoAsync(crypto, amount, address);
+            await withdrawCryptoAsync(crypto, withdrawAmount, address);
 
-            showAlert(`Success! ${amount} ${Crypto[crypto]} was sent to address ${address}.`, 'success');
+            showAlert(`Success! ${withdrawAmount} ${Crypto[crypto]} sent to ${address}.`, 'success');
 
-            setAmount(0);
+            setAmountStr('');
             setAddress('');
 
             onWithdrawSuccess();
@@ -78,7 +89,7 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
         } finally {
             setIsSubmitting(false);
         }
-    }
+    };
 
     return (
         <Column width="100%" gap='20px'>
@@ -87,41 +98,50 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
                     fullWidth
                     name="address"
                     value={address}
-                    label="Address"
-                    onChange={(e: any) => setAddress(e.target.value)}
+                    label="Wallet Address"
+                    placeholder="Enter recipient address"
+                    onChange={(e) => setAddress(e.target.value)}
                 />
             </Row>
+
             <Row>
-                <FormControl fullWidth={true}>
+                <FormControl fullWidth>
                     <InputLabel>Crypto</InputLabel>
                     <Select
                         value={crypto}
                         label="Crypto"
                         onChange={onCryptoChange}
                     >
-                        <MenuItem value={Crypto.BTC}>BTC</MenuItem>
-                        <MenuItem value={Crypto.ETH}>ETH</MenuItem>
-                        <MenuItem value={Crypto.LTC}>LTC</MenuItem>
+                        <MenuItem value={Crypto.BTC}>Bitcoin (BTC)</MenuItem>
+                        <MenuItem value={Crypto.ETH}>Ethereum (ETH)</MenuItem>
+                        <MenuItem value={Crypto.LTC}>Litecoin (LTC)</MenuItem>
                         <MenuItem value={Crypto.BNB}>BNB</MenuItem>
-                        <MenuItem value={Crypto.SOLANA}>Solana</MenuItem>
-                        <MenuItem value={Crypto.RIPPLE}>Ripple</MenuItem>
+                        <MenuItem value={Crypto.SOLANA}>Solana (SOL)</MenuItem>
+                        <MenuItem value={Crypto.RIPPLE}>Ripple (XRP)</MenuItem>
                     </Select>
                 </FormControl>
             </Row>
 
-            <Grid size={{ xs: 12 }}>
+            {/* Відображення доступного балансу */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: -1 }}>
+                <Typography variant="caption" color="text.secondary">
+                    Available: <b>{availableBalance?.toFixed(6)} {Crypto[crypto]}</b>
+                </Typography>
+            </Box>
+
+            <Grid container>
                 <TextField
                     fullWidth
                     type="number"
                     label='Amount'
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value === '' ? 0 : Number(e.target.value))}
+                    value={amountStr}
+                    onChange={(e) => setAmountStr(e.target.value)}
                     placeholder="0.00"
-                    inputProps={{ min: 0 }}
+                    inputProps={{ min: 0, step: "any" }}
                     InputProps={{
                         endAdornment: (
                             <InputAdornment position="end">
-                                <Button onClick={handleSetMax} size="small">
+                                <Button onClick={handleSetMax} size="small" sx={{ minWidth: 'auto' }}>
                                     Max
                                 </Button>
                             </InputAdornment>
@@ -130,18 +150,18 @@ export function WithdrawOnChain({userData, onWithdrawSuccess, availableBalance, 
                 />
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
+            <Grid container>
                 <Button
                     fullWidth
                     variant="contained"
                     color="primary"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !amount || Number(amount) <= 0}
+                    disabled={isSubmitting || !amountStr || parseFloat(amountStr) <= 0 || !address}
                     sx={{ height: 48 }}
                 >
                     {isSubmitting ? <CircularProgress size={24} color="inherit" /> : 'Confirm Withdraw'}
                 </Button>
             </Grid>
         </Column>
-    )
+    );
 }
